@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body {
+    @apply bg-white text-slate-900 antialiased overflow-x-hidden;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  .font-serif { font-family: 'Playfair Display', serif; }
+  .font-script { font-family: 'Caveat', cursive; }
+  .font-outfit { font-family: 'Outfit', sans-serif; }
+  
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: #f8fafc; }
+  ::-webkit-scrollbar-thumb { @apply bg-slate-200 border-4 border-slate-50 rounded-full hover:bg-slate-300; }
+}
+
+@layer utilities {
+  /* glassmorphism presets */
+  .glass {
+    @apply bg-white/[0.06] backdrop-blur-2xl border border-white/10;
+  }
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-2xl border border-white/8;
+  }
+
+  /* animation delay helpers */
+  .animation-delay-2000 { animation-delay: 2s; }
+  .animation-delay-4000 { animation-delay: 4s; }
+
+  /* shimmer text utility */
+  .text-shimmer {
+    background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #f472b6 100%);
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+}
+
+/* ensure shimmer keyframe is available globally */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
