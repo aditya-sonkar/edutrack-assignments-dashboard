@@ -6,7 +6,7 @@ A fully responsive, role-based assignment management platform built with **React
 
 ## 🚀 Live Demo
 
-🔗 **[Live App →](https://your-deployed-url.netlify.app)**
+🔗 **[Live App →](https://edutrack-assignments-dashboard.vercel.app)**
 
 ### Demo Credentials
 
