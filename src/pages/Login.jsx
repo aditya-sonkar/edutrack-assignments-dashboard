@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   GraduationCap, ArrowRight, Lock, Mail, Users, UserCircle2,
   BookOpen, BarChart3, ShieldCheck,
@@ -89,32 +89,41 @@ export default function Login() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const executeLogin = (role) => {
+  const executeLogin = (overrideEmail, overridePassword) => {
+    const loginEmail    = (overrideEmail    ?? email).trim().toLowerCase();
+    const loginPassword = (overridePassword ?? password).trim();
+
+    if (!loginEmail || !loginPassword) {
+      toast.error('Please enter your email and password.');
+      return;
+    }
+
     setIsLoading(true);
     setTimeout(() => {
-      const matched = usersList.find(u => u.role === role);
+      const matched = usersList.find(
+        u => u.email?.toLowerCase() === loginEmail && u.password === loginPassword
+      );
       if (matched) {
         login(matched.id);
         toast.success(`Welcome back, ${matched.name}! 👋`);
-        navigate(role === 'admin' ? '/admin' : '/student');
+        navigate(matched.role === 'admin' ? '/admin' : '/student');
       } else {
-        toast.error('No user found for this role.');
+        toast.error('Invalid email or password. Try one of the demo credentials below.');
         setIsLoading(false);
       }
-    }, 1200);
+    }, 900);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!email || !password) return toast.error('Please fill in email and password.');
-    executeLogin(activeTab);
+    executeLogin();
   };
 
   const quickAccess = (role, demoEmail, demoPass) => {
     setActiveTab(role);
     setEmail(demoEmail);
     setPassword(demoPass);
-    executeLogin(role);
+    executeLogin(demoEmail, demoPass);
   };
 
   return (
@@ -164,7 +173,7 @@ export default function Login() {
                   <Sparkles size={12} className="animate-pulse" /> THE ASSIGNMENT & REVIEW DASHBOARD
                 </div>
 
-                <h1 className="text-6xl md:text-7xl xl:text-8xl font-serif font-black leading-tight text-slate-900 tracking-tight mb-8">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl xl:text-8xl font-serif font-black leading-tight text-slate-900 tracking-tight mb-8">
                   The ultimate<br />
                   <span className="relative">
                     management{' '}
@@ -206,6 +215,10 @@ export default function Login() {
                   <div className="text-center mb-10">
                     <div className="font-script text-indigo-500 text-2xl mb-1 flex items-center justify-center gap-2">Internal Evaluation Mode <span className="animate-bounce">🛠️</span></div>
                     <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Enter Dashboard</h2>
+                    <p className="text-slate-400 text-sm font-medium mt-2">
+                      New here?{' '}
+                      <Link to="/register" className="text-indigo-600 font-black hover:underline">Create an account →</Link>
+                    </p>
                   </div>
 
                   <div className="relative flex bg-slate-100/60 rounded-[22px] p-1.5 mb-8 border border-slate-200/40">
@@ -224,7 +237,7 @@ export default function Login() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className={`relative transition-all rounded-2xl group ${focused === 'email' ? 'ring-4 ring-indigo-50 border-indigo-200 bg-white' : 'bg-slate-50 border-slate-200'}`}>
                       <Mail size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${focused === 'email' ? 'text-indigo-600' : 'text-slate-300'}`} />
-                      <input type="email" required value={email} onChange={e => setEmail(e.target.value)} onFocus={() => setFocused('email')} onBlur={() => setFocused(null)} placeholder={activeTab === 'student' ? "student_demo@edu.com" : "instructor_demo@edu.com"} className="w-full h-14 pl-12 pr-5 bg-transparent border-0 rounded-2xl outline-none text-slate-900 font-bold" />
+                      <input type="email" required value={email} onChange={e => setEmail(e.target.value)} onFocus={() => setFocused('email')} onBlur={() => setFocused(null)} placeholder="e.g. alice@edu.com" className="w-full h-14 pl-12 pr-5 bg-transparent border-0 rounded-2xl outline-none text-slate-900 font-bold" />
                     </div>
                     <div className={`relative transition-all rounded-2xl group ${focused === 'pass' ? 'ring-4 ring-indigo-50 border-indigo-200 bg-white' : 'bg-slate-50 border-slate-200'}`}>
                       <Lock size={16} className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${focused === 'pass' ? 'text-indigo-600' : 'text-slate-300'}`} />
@@ -234,9 +247,40 @@ export default function Login() {
                       {isLoading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : <>Access Dashboard <ArrowRight size={22} /></>}
                     </motion.button>
                   </form>
-                  <div className="mt-8 grid grid-cols-2 gap-3">
-                    <button onClick={() => quickAccess('student', 'alice@student.edu', 'pass')} className="h-12 rounded-xl border border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-[10px] font-black uppercase text-indigo-600 tracking-widest transition-all">Quick Student</button>
-                    <button onClick={() => quickAccess('admin', 'dr.smith@instructure.edu', 'pass')} className="h-12 rounded-xl border border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-[10px] font-black uppercase text-indigo-600 tracking-widest transition-all">Quick Instructor</button>
+                  {/* Credentials Hint */}
+                  <div className="mt-8 space-y-3">
+                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] text-center">Quick Access — Click to autofill</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => quickAccess('student', 'alice@edu.com', 'pass')}
+                        className="h-11 rounded-xl border border-indigo-100 bg-indigo-50/30 hover:bg-indigo-50 text-[10px] font-black uppercase text-indigo-600 tracking-widest transition-all flex flex-col items-center justify-center gap-0.5"
+                      >
+                        <span>Alice</span><span className="text-[8px] text-indigo-400 normal-case font-bold">alice@edu.com</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => quickAccess('student', 'bob@edu.com', 'pass')}
+                        className="h-11 rounded-xl border border-sky-100 bg-sky-50/30 hover:bg-sky-50 text-[10px] font-black uppercase text-sky-600 tracking-widest transition-all flex flex-col items-center justify-center gap-0.5"
+                      >
+                        <span>Bob</span><span className="text-[8px] text-sky-400 normal-case font-bold">bob@edu.com</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => quickAccess('student', 'charlie@edu.com', 'pass')}
+                        className="h-11 rounded-xl border border-violet-100 bg-violet-50/30 hover:bg-violet-50 text-[10px] font-black uppercase text-violet-600 tracking-widest transition-all flex flex-col items-center justify-center gap-0.5"
+                      >
+                        <span>Charlie</span><span className="text-[8px] text-violet-400 normal-case font-bold">charlie@edu.com</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => quickAccess('admin', 'dr.smith@edu.com', 'pass')}
+                        className="h-11 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-100 text-[10px] font-black uppercase text-slate-600 tracking-widest transition-all flex flex-col items-center justify-center gap-0.5"
+                      >
+                        <span>Dr. Smith</span><span className="text-[8px] text-slate-400 normal-case font-bold">dr.smith@edu.com</span>
+                      </button>
+                    </div>
+                    <p className="text-center text-[10px] text-slate-300 font-bold">All passwords: <span className="font-black text-slate-400">pass</span></p>
                   </div>
                 </div>
               </motion.div>
