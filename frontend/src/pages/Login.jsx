@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { getUsers } from '../utils/localStorage';
 import {
   GraduationCap, ArrowRight, Lock, Mail, Users, UserCircle2,
   BookOpen, BarChart3, ShieldCheck,
@@ -70,7 +71,7 @@ const StatPill = ({ icon, value, label, delay, className, style }) => (
 /* ─── MAIN COMPONENT ─── */
 
 export default function Login() {
-  const { login, usersList } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('student');
   const [email, setEmail] = useState('');
@@ -100,7 +101,8 @@ export default function Login() {
 
     setIsLoading(true);
     setTimeout(() => {
-      const matched = usersList.find(
+      // Always read fresh from localStorage so newly registered users are found
+      const matched = getUsers().find(
         u => u.email?.toLowerCase() === loginEmail && u.password === loginPassword
       );
       if (matched) {
